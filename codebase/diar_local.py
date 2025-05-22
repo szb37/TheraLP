@@ -8,10 +8,19 @@ import torch
 import time
 import os
 
+
+dir_audios = folders.soap_prepped  # folder for prepped audio files
+dir_diars = os.path.join(folders.exports, 'SOAP', 'diars') # folder where diarization output will be placed
+
+### Setup
 warnings.filterwarnings("ignore", category=UserWarning) # Suppress all UserWarnings
 print(f'Is CUDA available: {torch.cuda.is_available()}.')
+pipeline = Pipeline.from_pretrained(
+    "pyannote/speaker-diarization-3.1",
+    use_auth_token=tokens.auth_token_hg)
+pipeline = pipeline.to(torch.device("cuda"))
 
-### convenience functions
+### Convenience function
 def diarization2df(diarization):
     '''
         Type: The type of event. Common values include SPEAKER, NON-SPEECH, NOISE, etc. The most common value is SPEAKER.
@@ -35,21 +44,15 @@ def diarization2df(diarization):
     df = pd.DataFrame(data, columns=columns)
     return df
 
-### setup audio batch
-dir_audios = folders.soap_prepped
+### Main diarization loop
 fnames = [fname for fname in os.listdir(dir_audios) if fname.endswith('.mp3')]
-
-### pyannote setup
-pipeline = Pipeline.from_pretrained(
-    "pyannote/speaker-diarization-3.1",
-    use_auth_token=tokens.auth_token_hg)
-pipeline = pipeline.to(torch.device("cuda"))
-
 for idx, fname in enumerate(fnames):
 
-    output_fpath = os.path.join(folders.exports, f'diar_{fname[:-4].lower()}.csv')
-    if os.path.isfile(output_fpath):
-        print(f'Already processed: {output_fpath}')
+    fname_out = f'diar_{fname[:-4]}.csv'
+    fpath_out = os.path.join(dir_diars, fname_out)
+
+    if os.path.isfile(fpath_out):
+        print(f'Already processed: {fname_out} ({idx+1}/{len(fnames)})')
         continue
 
     start_time = time.time()
@@ -57,7 +60,7 @@ for idx, fname in enumerate(fnames):
         diarization = pipeline(os.path.join(dir_audios, fname), hook=hook)
     end_time = time.time()
     elapsed_time = float(f'{round((end_time-start_time)/60, 1)}')
-    print(f'Finished with file #{idx}; this file took: {elapsed_time} mins.')
+    print(f'Finished: {fname_out} ({idx+1}/{len(fnames)}; took {elapsed_time} mins)')
 
     df = diarization2df(diarization)
-    df.to_csv(output_fpath)
+    df.to_csv(fpath_out)

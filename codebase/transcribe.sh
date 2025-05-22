@@ -5,4 +5,4 @@
 source ~/.bashrc
 conda init
 conda activate theralp
-python tscribe_remote.py
+python tscribe.py
