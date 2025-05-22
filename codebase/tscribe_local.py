@@ -5,25 +5,27 @@ import json
 import time
 import os
 
-fnames = [fname for fname in os.listdir(folders.pdp1_audios) if fname.endswith('.mp3')]
-
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f'Using device: {device}')
+tscribe_overview = open(os.path.join(folders.exports, 'tscribe_overview.txt'), "w")
+
+audio_dir_path = folders.soap_prepped
+fnames = [fname for fname in os.listdir(audio_dir_path) if fname.endswith('.mp3')]
+
 model = whisper.load_model('medium.en', download_root=folders.models, device=device)
 model = model.to(device)
 
-tscribe_overview = open(os.path.join(folders.exports, 'tscribe_overview.txt'), "w")
-
 for idx, fname in enumerate(fnames):
+
+    fpath_out = os.path.join(folders.exports, f'tscript_{fname[:-4].lower()}.json')
+    if os.path.exists(fpath_out):
+        print(f'Already processed: {fname} ({idx+1}/{len(fnames)})')
+        continue
 
     print(f'Processing {fname} ({idx+1}/{len(fnames)})')
 
-    fpath_out = os.path.join(folders.pdp1_audios, f'tscript_{fname.lower()}.json')
-    if os.path.exists(fpath_out):
-        continue
-
     start_time = time.time()
-    result = model.transcribe(os.path.join(folders.pdp1_audios, fname))
+    result = model.transcribe(os.path.join(audio_dir_path, fname))
     end_time = time.time()
     elapsed_time = float(f'{round((end_time-start_time)/60, 2)}')
 

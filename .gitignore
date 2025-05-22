@@ -7,8 +7,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-codebase/exports/diars/*
-codebase/exports/tscripts/*
+codebase/exports/*
 codebase/src/tokens.py
 resources/*
 

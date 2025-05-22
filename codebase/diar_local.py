@@ -36,7 +36,7 @@ def diarization2df(diarization):
     return df
 
 ### setup audio batch
-dir_audios = folders.pdp1_audios
+dir_audios = folders.soap_prepped
 fnames = [fname for fname in os.listdir(dir_audios) if fname.endswith('.mp3')]
 
 ### pyannote setup
@@ -47,7 +47,7 @@ pipeline = pipeline.to(torch.device("cuda"))
 
 for idx, fname in enumerate(fnames):
 
-    output_fpath = os.path.join(folders.exports_diars, f'diar_{fname[:-4].lower()}.csv')
+    output_fpath = os.path.join(folders.exports, f'diar_{fname[:-4].lower()}.csv')
     if os.path.isfile(output_fpath):
         print(f'Already processed: {output_fpath}')
         continue

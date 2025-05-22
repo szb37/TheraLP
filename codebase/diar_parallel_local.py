@@ -16,6 +16,10 @@ print(f'Is CUDA available: {torch.cuda.is_available()}.')
 dir_audios = folders.pdp1_audios
 fnames = [fname for fname in os.listdir(dir_audios) if fname.endswith('.mp3')]
 
+pipeline = Pipeline.from_pretrained(
+    "pyannote/speaker-diarization-3.1",
+    use_auth_token=tokens.auth_token_hg)
+pipeline = pipeline.to(torch.device("cuda"))
 
 def main():
     # Number of parallel workers (adjust as needed)
@@ -27,12 +31,6 @@ def main():
 def process_file(args):
     idx, fname = args
 
-    pipeline = Pipeline.from_pretrained(
-        "pyannote/speaker-diarization-3.1",
-        use_auth_token=tokens.auth_token_hg)
-    pipeline = pipeline.to(torch.device("cuda"))
-
-    dir_audios = folders.pdp1_audios
     output_fpath = os.path.join(folders.exports_diars, f'diar_{fname[:-4].lower()}.csv')
     if os.path.isfile(output_fpath):
         print(f'Already finished: {fname} ({idx+1}/{len(fnames)})')
