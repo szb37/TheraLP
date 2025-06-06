@@ -1,4 +1,0 @@
-need to run from git bash
-command: "bash prep[...]"
-Need to be in the same folder as the m4a source files
-The script cuts out first silent period and converts to mp3
